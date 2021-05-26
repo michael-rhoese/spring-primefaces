@@ -1,0 +1,114 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!--
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+    http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+-->
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:ui="http://java.sun.com/jsf/facelets">
+    <div class="ui-g ui-g-nopad">
+        <div class="ui-g-2 ui-g-nopad">
+            <div class="ui-g-12">
+                <h1 style="margin-top: 0">Menu</h1>
+            </div>
+            <div class="ui-g-12">
+                <h:form id="personButtonsForm">
+                    <p:commandButton
+                        id="createButton"
+                        value="Create new entry"
+                        styleClass="ui-button-raised"
+                        action="#{personView.onClickCreateNewEntry}"
+                        oncomplete="PF('personDialog').show();"
+                        process="@this"
+                        update=":personDialogForm:personDialog"
+                        ajax="true">
+                    </p:commandButton>
+                </h:form>
+            </div>
+        </div>
+        <div class="ui-g-10 ui-g-nopad">
+            <div class="ui-g-12">
+                <h1 style="margin-top: 0">Person List</h1>
+            </div>
+            <div class="ui-g-12">
+                <h:form id="personTableForm">
+                    <p:dataTable id="personTable"
+                                 var="entry" value="#{personView.lazyDataModel}"
+                                 paginator="true"
+                                 rows="10"
+                                 paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {CurrentPageReport} {NextPageLink} {LastPageLink}"
+                                 rowsPerPageTemplate="5,10,15"
+                                 selectionMode="single"
+                                 selection="#{personView.lazyDataModel.selected}"
+                                 lazy="true"
+                                 paginatorPosition="bottom">
+                        <p:ajax event="rowSelect" listener="#{personView.onRowSelect}"
+                                update=":personDialogForm:personDialog"
+                                oncomplete="PF('personDialog').show()"/>
+
+                        <p:column id="columnId" headerText="Id" sortBy="#{entry.id}">
+                            <h:outputText id="columnIdRow" value="#{entry.id}"/>
+                        </p:column>
+                        <p:column id="columnFirstname" headerText="Firstname" sortBy="#{entry.firstName}"
+                                  filterBy="#{entry.firstName}">
+                            <h:outputText id="columnFirstnameRow" value="#{entry.firstName}"/>
+                        </p:column>
+                        <p:column id="columnLastname" headerText="Lastname" sortBy="#{entry.firstName}"
+                                  filterBy="#{entry.lastName}">
+                            <h:outputText id="columnLastnameRow" value="#{entry.lastName}"/>
+                        </p:column>
+                        <p:column id="columnAge" headerText="Age">
+                            <h:outputText id="columnAgeRow" value="#{entry.age}"/>
+                        </p:column>
+                        <p:column id="columnCreatedAt" headerText="Created At" sortBy="#{entry.createdAt}"
+                                  filterBy="#{entry.createdAt}">
+                            <h:outputText id="columnCreatedAtRow" value="#{entry.createdAt}">
+                                <f:convertDateTime pattern="dd.MM.yyyy - hh:mm:ss"/>
+                            </h:outputText>
+                        </p:column>
+                        <p:column id="columnModifiedAt" headerText="Modified At" sortBy="#{entry.modifiedAt}"
+                                  filterBy="#{entry.modifiedAt}">
+                            <h:outputText id="columnModifiedAtRow" value="#{entry.modifiedAt}">
+                                <f:convertDateTime pattern="dd.MM.yyyy - hh:mm:ss"/>
+                            </h:outputText>
+                        </p:column>
+                        <p:column>
+                            <p:commandButton
+                                id="deleteButton"
+                                icon="pi pi-trash"
+                                action="#{personView.onClickDeleteEntry(entry)}"
+                                process="@this"
+                                update="personTable"
+                                ajax="true"
+                                />
+                        </p:column>
+                    </p:dataTable>
+                </h:form>
+            </div>
+        </div>
+    </div>
+
+    <ui:include src="artifacts/entry_detail_dialog.xhtml">
+        <ui:param name="specialView" value="#{personView}"/>
+        <ui:param name="tableId" value=":personTableForm:personTable"/>
+        <ui:param name="dialogTitle" value="Person Dialog"/>
+        <ui:param name="dialogId" value="personDialog"/>
+        <ui:param name="fieldTemplate" value="person_detail_dialog_fields"/>
+    </ui:include>
+</ui:composition>

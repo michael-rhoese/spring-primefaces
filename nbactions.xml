@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<actions>
+        <action>
+            <actionName>CUSTOM-spring:run</actionName>
+            <displayName>spring:run</displayName>
+            <goals>
+                <goal>spring-boot:run</goal>
+            </goals>
+        </action>
+    </actions>

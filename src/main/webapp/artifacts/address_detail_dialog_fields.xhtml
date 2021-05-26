@@ -1,0 +1,41 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!--
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+    http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+-->
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ui="http://java.sun.com/jsf/facelets">
+
+    <p:panelGrid columns="2"
+                 rendered="#{not empty specialView.lazyDataModel.selected}"
+                 columnClasses="label,value">
+        <p:outputLabel id="addressPopupStreetInputLabel" for="addressPopupStreetInput"
+                       value="Street:"/>
+        <h:inputText id="addressPopupStreetInput" value="#{specialView.lazyDataModel.selected.street}" required="true" requiredMessage="Street is required!"/>
+
+        <p:outputLabel id="addressPopupZipcodeInputLabel" for="addressPopupZipcodeInput" value="Zipcode:"/>
+        <h:inputText id="addressPopupZipcodeInput" value="#{specialView.lazyDataModel.selected.zipcode}" required="true" requiredMessage="Zipcode is required!"/>
+
+        <p:outputLabel id="addressPopupCityInputLabel" for="addressPopupCityInput" value="City:"/>
+        <h:inputText id="addressPopupCityInput" value="#{specialView.lazyDataModel.selected.city}" required="true" requiredMessage="City is required!"/>
+
+        <p:outputLabel id="addressPopupCountryInputLabel" for="addressPopupCountryInput" value="Country:"/>
+        <h:inputText id="addressPopupCountryInput" value="#{specialView.lazyDataModel.selected.country}" required="true" requiredMessage="Country is required!"/>
+    </p:panelGrid>
+</ui:composition>

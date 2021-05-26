@@ -1,0 +1,176 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!--
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+    http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+-->
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:ui="http://java.sun.com/jsf/facelets">
+    <div class="ui-g ui-g-nopad">
+        <div class="ui-g-2 ui-g-nopad">
+            <div class="ui-g-12">
+                <h1 style="margin-top: 0">Menu</h1>
+            </div>
+            <div class="ui-g-12">
+                <h:form id="addressButtonsForm">
+                    <p:commandButton
+                        id="createButton"
+                        value="Create new entry"
+                        styleClass="ui-button-raised"
+                        action="#{addressView.onClickCreateNewEntry}"
+                        oncomplete="PF('addressDialog').show();"
+                        process="@this"
+                        update=":addressDialogForm:addressDialog"
+                        ajax="true">
+                    </p:commandButton>
+                </h:form>
+            </div>
+        </div>
+        <div class="ui-g-10 ui-g-nopad">
+            <div class="ui-g-12">
+                <h1 style="margin-top: 0">Address List</h1>
+            </div>
+            <div class="ui-g-12">
+                <h:form id="addressTableForm">
+                    <p:dataTable id="addressTable"
+                                 var="entry" value="#{addressView.lazyDataModel}"
+                                 paginator="true"
+                                 rows="10"
+                                 paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {CurrentPageReport} {NextPageLink} {LastPageLink}"
+                                 rowsPerPageTemplate="5,10,15"
+                                 selectionMode="single"
+                                 selection="#{addressView.lazyDataModel.selected}"
+                                 lazy="true"
+                                 paginatorPosition="bottom">
+                        <p:ajax event="rowSelect" listener="#{addressView.onRowSelect}"
+                                update=":addressDialogForm:addressDialog"
+                                oncomplete="PF('addressDialog').show()"/>
+
+                        <p:column id="columnId" headerText="Id" sortBy="#{entry.id}">
+                            <h:outputText id="columnIdRow" value="#{entry.id}"/>
+                        </p:column>
+                        <p:column id="columnStreet" headerText="Street" sortBy="#{entry.street}" filterBy="#{entry.street}">
+                            <h:outputText id="columnStreetRow" value="#{entry.street}" />
+                        </p:column>
+                        <p:column id="Zipcode" headerText="Zipcode" sortBy="#{entry.zipcode}" filterBy="#{entry.zipcode}">
+                            <h:outputText id="columnZipcodeRow" value="#{entry.zipcode}" />
+                        </p:column>
+                        <p:column id="columnCity" headerText="City" sortBy="#{entry.city}" filterBy="#{entry.city}">
+                            <h:outputText id="columnCityRow" value="#{entry.city}" />
+                        </p:column>
+                        <p:column id="columnCountry" headerText="Country" sortBy="#{entry.country}" filterBy="#{entry.country}">
+                            <h:outputText id="columnCountryRow" value="#{entry.country}" />
+                        </p:column>
+                        <p:column id="columnCreatedAt" headerText="Created At" sortBy="#{entry.createdAt}" filterBy="#{entry.createdAt}">
+                            <h:outputText id="columnCreatedAtRow" value="#{entry.createdAt}">
+                                <f:convertDateTime pattern="dd.MM.yyyy - hh:mm:ss"/>
+                            </h:outputText>
+                        </p:column>
+                        <p:column id="columnModifiedAt" headerText="Modified At" sortBy="#{entry.modifiedAt}"
+                                  filterBy="#{entry.modifiedAt}">
+                            <h:outputText id="columnModifiedAtRow" value="#{entry.modifiedAt}">
+                                <f:convertDateTime pattern="dd.MM.yyyy - hh:mm:ss"/>
+                            </h:outputText>
+                        </p:column>
+                        <p:column>
+                            <p:commandButton
+                                id="showCoordinatesButton"
+                                icon="pi pi-map-marker"
+                                update="addressTable, :addressMapDialog"
+                                ajax="true"
+                                style="margin-right: 20px; margin-bottom: 10px"
+                                actionListener="#{addressView.onClickCalculateCoordinates(entry)}"
+                                oncomplete="PF('addressMapDialog').show(); renderIfPossible(args);"
+                                />
+
+                            <p:commandButton
+                                id="deleteButton"
+                                icon="pi pi-trash"
+                                action="#{addressView.onClickDeleteEntry(entry)}"
+                                process="@this"
+                                update="addressTable"
+                                ajax="true" />
+                        </p:column>
+                    </p:dataTable>
+                </h:form>
+            </div>
+        </div>
+
+    </div>
+
+    <ui:include src="artifacts/entry_detail_dialog.xhtml">
+        <ui:param name="specialView" value="#{addressView}"/>
+        <ui:param name="tableId" value=":addressTableForm:addressTable"/>
+        <ui:param name="dialogTitle" value="Address Dialog"/>
+        <ui:param name="dialogId" value="addressDialog"/>
+        <ui:param name="fieldTemplate" value="address_detail_dialog_fields"/>
+    </ui:include>
+
+    <p:dialog id="addressMapDialog"
+              widgetVar="addressMapDialog"
+              width="625"
+              height="400"
+              modal="true"
+              style="padding: 8px"
+              header="Address on map">
+        <div id="addressPositionMap" style="width: 560px; height: 380px"></div>
+    </p:dialog>
+
+    <script type="text/javascript">
+        // <![CDATA[
+        var mapInstance;
+
+        /**
+         * Renders a map with markers, or geometrics. See https://leafletjs.com/ for more informations.
+         * @param {type} args Arguments returned from ajax request
+         */
+        renderIfPossible = function (args) {
+            if (!args['renderingPossible']) {
+                return;
+            }
+
+            mapInstance = L.map('addressPositionMap').setView([args['left'], args['top']], 13);
+            L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
+                maxZoom: 18,
+                attribution: '',
+                id: 'mapbox/streets-v11',
+                tileSize: 512,
+                zoomOffset: -1
+            }).addTo(mapInstance);
+
+            L.marker([
+                args['lat'],
+                args['lon']
+            ])
+                    .addTo(mapInstance)
+                    .bindPopup(args['description']).openPopup();
+            var popup = L.popup();
+            function onMapClick(e) {
+                popup
+                        .setLatLng(e.latlng)
+                        .setContent("You clicked the map at " + e.latlng.toString())
+                        .openOn(mapInstance);
+            }
+
+            mapInstance.on('click', onMapClick);
+        };
+        //]]>
+    </script>
+
+</ui:composition>
