@@ -19,23 +19,16 @@
 package de.fherfurt.primefaces.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.json.JsonMapper;
 import de.fherfurt.primefaces.domains.Address;
 import de.fherfurt.primefaces.domains.BoundingBox;
 import de.fherfurt.primefaces.domains.Position;
+import fr.dudie.nominatim.client.JsonNominatimClient;
 import java.io.IOException;
 import java.io.Serializable;
-import java.net.ProtocolException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.Objects;
+import java.util.List;
 import java.util.Optional;
-import javax.net.ssl.HttpsURLConnection;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -44,65 +37,39 @@ public class GeocoderService implements Serializable {
 
     private static final long serialVersionUID = -3491096454339897979L;
 
-    private static final String API_URL = "https://nominatim.openstreetmap.org/search?q=";
-    private static final String URL_PARAMS = "&format=json&addressdetails=1";
+    private final JsonNominatimClient client;
 
-    private final ObjectMapper mapper = new ObjectMapper();
+    @Autowired
+    public GeocoderService(final JsonNominatimClient nominatimClient) {
+        this.client = nominatimClient;
+    }
 
     public Optional<Position> getCoordinates(final Address address) throws JsonProcessingException {
-        String errorMsgQuery = "";
+
         try {
-            final StringBuilder queryBuilder = new StringBuilder(API_URL);
+            final List<fr.dudie.nominatim.model.Address> foundAddresses = client.search(address.getStreet() + ", " + address.getCity() + ", " + address.getZipcode() + ", " + address.getCountry());
 
-            if (StringUtils.isAnyEmpty(address.getStreet(), address.getCity(), address.getZipcode(), address.getCountry())) {
+            if (foundAddresses.isEmpty()) {
                 return Optional.empty();
             }
 
-            final String query = queryBuilder.append(address.getStreet())
-                    .append("+")
-                    .append(address.getCity())
-                    .append("+")
-                    .append(address.getZipcode())
-                    .append("+")
-                    .append(address.getCountry())
-                    .append(URL_PARAMS).toString();
-
-            errorMsgQuery = query;
-
-            log.debug("Query:" + query);
-
-            final Optional<String> queryResult = getRequest(query);
-
-            if (queryResult.isEmpty()) {
-                return Optional.empty();
-            }
-
-            JsonMapper jsonMapper = new JsonMapper();
-
-            final JsonNode responseJsonNode = mapper.readTree(queryResult.get());
-            final Position res = jsonMapper.convertValue(responseJsonNode.get(0), Position.class);
-
-            final Double[] boundingBoxArray = jsonMapper.convertValue(responseJsonNode.get(0).get("boundingbox"), Double[].class);
-            res.setBoundingBox(BoundingBox.of(boundingBoxArray));
-            return Optional.of(res);
+            return Optional.of(map(foundAddresses.get(0)));
         } catch (IOException e) {
-            log.error("Error when trying to get data with the following query " + errorMsgQuery);
+            log.error("Error when trying to get data for " + address, e);
         }
 
         return Optional.empty();
     }
 
-    private Optional<String> getRequest(String url) throws IOException {
-        final HttpsURLConnection con = (HttpsURLConnection) new URL(url).openConnection();
-        con.setRequestMethod("GET");
-        con.connect();
-        if (!Objects.equals(con.getResponseCode(), 200)) {
-            return Optional.empty();
-        }
+    private BoundingBox map(fr.dudie.nominatim.model.BoundingBox boundingBox) {
+        return BoundingBox.of(boundingBox.getWest(), boundingBox.getSouth(), boundingBox.getEast(), boundingBox.getNorth());
+    }
 
-        final String content = IOUtils.toString(con.getInputStream(), StandardCharsets.UTF_8.name());
-        con.disconnect();
+    private Position map(fr.dudie.nominatim.model.Address address) {
+        Position res = Position.of(address.getDisplayName(), address.getLongitude(), address.getLatitude());
 
-        return Optional.of(content);
+        res.setBoundingBox(map(address.getBoundingBox()));
+
+        return res;
     }
 }

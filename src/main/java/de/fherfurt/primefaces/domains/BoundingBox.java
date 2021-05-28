@@ -39,7 +39,7 @@ public class BoundingBox implements Serializable {
     private double rightBound;
     private double topBound;
 
-    public static BoundingBox of(Double[] boundingBoxArray) {
+    public static BoundingBox of(Double... boundingBoxArray) {
         return new BoundingBox(boundingBoxArray[0], boundingBoxArray[1], boundingBoxArray[2], boundingBoxArray[3]);
     }
 }
