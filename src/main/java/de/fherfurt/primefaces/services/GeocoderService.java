@@ -23,10 +23,12 @@ import de.fherfurt.primefaces.domains.Address;
 import de.fherfurt.primefaces.domains.BoundingBox;
 import de.fherfurt.primefaces.domains.Position;
 import fr.dudie.nominatim.client.JsonNominatimClient;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Optional;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -61,14 +63,17 @@ public class GeocoderService implements Serializable {
         return Optional.empty();
     }
 
-    private BoundingBox map(fr.dudie.nominatim.model.BoundingBox boundingBox) {
-        return BoundingBox.of(boundingBox.getWest(), boundingBox.getSouth(), boundingBox.getEast(), boundingBox.getNorth());
-    }
-
     private Position map(fr.dudie.nominatim.model.Address address) {
         Position res = Position.of(address.getDisplayName(), address.getLongitude(), address.getLatitude());
-
-        res.setBoundingBox(map(address.getBoundingBox()));
+        fr.dudie.nominatim.model.BoundingBox boundingBox = address.getBoundingBox();
+        res.setBoundingBox(
+                BoundingBox.of(
+                        boundingBox.getWest(),
+                        boundingBox.getSouth(),
+                        boundingBox.getEast(),
+                        boundingBox.getNorth()
+                )
+        );
 
         return res;
     }

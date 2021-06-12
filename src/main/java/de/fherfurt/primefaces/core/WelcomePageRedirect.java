@@ -16,13 +16,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package de.fherfurt.primefaces.repositories.positions;
+package de.fherfurt.primefaces.core;
 
-import de.fherfurt.primefaces.domains.Position;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
+import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-@Repository
-public interface PositionRepository extends JpaRepository<Position, Long> {
+@Configuration
+public class WelcomePageRedirect implements WebMvcConfigurer {
 
+    @Override
+    public void addViewControllers(ViewControllerRegistry registry) {
+        registry.addViewController("/")
+                .setViewName("forward:/index.xhtml");
+
+        registry.setOrder(Ordered.HIGHEST_PRECEDENCE);
+    }
 }

@@ -1,3 +1,21 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package de.fherfurt.primefaces.repositories.persons;
 
 import de.fherfurt.primefaces.domains.Person;
@@ -27,7 +45,7 @@ public class PersonRepositoryImpl implements PersonRepositoryCustom {
         final Root<Person> person = query.from(Person.class);
 
         final List<Predicate> predicates = convertToPredicates(builder, person, filters);
-        query.where(predicates.toArray(new Predicate[predicates.size()]));
+        query.where(predicates.toArray(new Predicate[0]));
 
         final List<Order> orderList = sorts.entrySet().stream()
                 .map(sort -> sort.getValue().getOrder().isAscending() ? builder.asc(person.get(sort.getKey())) : builder.desc(person.get(sort.getKey())))
@@ -47,7 +65,7 @@ public class PersonRepositoryImpl implements PersonRepositoryCustom {
         query.select(builder.count(person));
 
         final List<Predicate> predicates = convertToPredicates(builder, person, filters);
-        query.where(predicates.toArray(new Predicate[predicates.size()]));
+        query.where(predicates.toArray(new Predicate[0]));
 
         return em.createQuery(query).getSingleResult();
     }
