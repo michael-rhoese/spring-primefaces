@@ -40,14 +40,8 @@
 
                 <ui:include src="menu.xhtml"/>
 
-                <p:outputPanel styleClass="ui-g-12" rendered="#{indexView.currentContent eq 'HOME'}">
-                    <ui:include src="home.xhtml"/>
-                </p:outputPanel>
-                <p:outputPanel styleClass="ui-g-12" rendered="#{indexView.currentContent eq 'PERSONS'}">
-                    <ui:include src="persons.xhtml"/>
-                </p:outputPanel>
-                <p:outputPanel styleClass="ui-g-12" rendered="#{indexView.currentContent eq 'ADDRESSES'}">
-                    <ui:include src="addresses.xhtml"/>
+                <p:outputPanel styleClass="ui-g-12">
+                    <ui:include src="#{indexView.currentContent.toLowerCase()}.xhtml"/>
                 </p:outputPanel>
             </p:outputPanel>
         </h:body>
